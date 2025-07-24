@@ -8,8 +8,7 @@ env:
 on:
   push:
     paths:
-      - mcp_server/**
-      - parliament_mcp/**
+      - fca_mcp/**
       - pyproject.toml
       - uv.lock
     branches:
