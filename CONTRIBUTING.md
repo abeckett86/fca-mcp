@@ -1,4 +1,4 @@
-# Contributing to `parliament-mcp`
+# Contributing to `fca-mcp`
 
 You can contribute in many ways:
 
@@ -6,7 +6,7 @@ You can contribute in many ways:
 
 ## Report Bugs
 
-Report bugs at https://github.com/i-dot-ai/parliament-mcp/issues
+Report bugs at https://github.com/trailblazelabs/fca-mcp/issues
 
 If you are reporting a bug, please include:
 
@@ -25,7 +25,7 @@ Anything tagged with "enhancement" and "help wanted" is open to whoever wants to
 
 ## Submit Feedback
 
-The best way to send feedback is to file an issue at https://github.com/i-dot-ai/parliament-mcp/issues.
+The best way to send feedback is to file an issue at https://github.com/trailblazelabs/fca-mcp/issues.
 
 If you are proposing a new feature:
 
@@ -34,18 +34,18 @@ If you are proposing a new feature:
 
 # Get Started!
 
-Ready to contribute? Here's how to set up `parliament-mcp` for local development.
+Ready to contribute? Here's how to set up `fca-mcp` for local development.
 
 ## Initial Setup
 
-1. Fork the `parliament-mcp` repo on GitHub.
+1. Fork the `fca-mcp` repo on GitHub.
 
 2. Clone your fork locally:
 
 ```bash
 cd <directory_in_which_repo_should_be_created>
-git clone git@github.com:YOUR_NAME/parliament-mcp.git
-cd parliament-mcp
+git clone git@github.com:YOUR_NAME/fca-mcp.git
+cd fca-mcp
 ```
 
 3. **Follow the development setup instructions in the [README.md](README.md#development)** to:
@@ -103,21 +103,21 @@ When contributing to the MCP server functionality, please follow these additiona
 
 ## Adding New MCP Tools
 
-1. **Tool Definition**: Add new tools to `parliament_mcp/mcp_server/api.py` following the existing pattern
-2. **Handler Implementation**: Implement the actual functionality in `parliament_mcp/mcp_server/handlers.py`
+1. **Tool Definition**: Add new tools to `fca_mcp/mcp_server/api.py` following the existing pattern
+2. **Handler Implementation**: Implement the actual functionality in `fca_mcp/mcp_server/handlers.py`
 3. **Testing**: Add tests to `tests/mcp_server/` for any new tools or handlers
 4. **Documentation**: Update the README.md to document the new tool in the "MCP Tools Available" section
 
 ## Data Loading and Elasticsearch
 
-1. **Models**: Add new data models to `parliament_mcp/models.py` if needed
-2. **Data Loaders**: Implement new data loaders in `parliament_mcp/data_loaders.py`
-3. **CLI Integration**: Add CLI commands to `parliament_mcp/cli.py` for new data types
+1. **Models**: Add new data models to `fca_mcp/models.py` if needed
+2. **Data Loaders**: Implement new data loaders in `fca_mcp/data_loaders.py`
+3. **CLI Integration**: Add CLI commands to `fca_mcp/cli.py` for new data types
 4. **Index Management**: Update Elasticsearch initialization if new indices are needed
 
 ## Environment and Configuration
 
-1. **Settings**: Add new configuration options to `parliament_mcp/settings.py`
+1. **Settings**: Add new configuration options to `fca_mcp/settings.py`
 2. **Environment Variables**: Document new environment variables in the README.md
 3. **Docker**: Update `docker-compose.yaml` if new services are needed
 
