@@ -4,9 +4,9 @@ import os
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from parliament_mcp.cli import configure_logging, load_data
-from parliament_mcp.elasticsearch_helpers import get_async_es_client
-from parliament_mcp.settings import ParliamentMCPSettings, settings
+from fca_mcp.cli import configure_logging, load_data
+from fca_mcp.elasticsearch_helpers import get_async_es_client
+from fca_mcp.settings import FCAmcpSettings, settings
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -15,29 +15,60 @@ logger.setLevel(log_level)
 configure_logging(level=log_level)
 
 
-async def main(settings: ParliamentMCPSettings, from_date_str: str, to_date_str: str) -> None:
-    """Main ingestion function that processes all data sources."""
+async def main(settings: FCAmcpSettings, from_date_str: str | None = None, to_date_str: str | None = None) -> None:
+    """Main ingestion function that processes all FCA data sources."""
 
-    logger.info("Ingesting Hansard data...")
     async with get_async_es_client(settings) as es_client:
+        # Load FCA Handbook (no date range needed)
+        logger.info("Ingesting FCA Handbook data...")
         await load_data(
             es_client=es_client,
             settings=settings,
-            source="hansard",
-            from_date=from_date_str,
-            to_date=to_date_str,
+            source="handbook",
         )
-        logger.info("Hansard data ingestion complete.")
+        logger.info("FCA Handbook data ingestion complete.")
 
-        logger.info("Ingesting Parliamentary Questions data...")
+        # Load Policy Statements (with date range if provided)
+        logger.info("Ingesting FCA Policy Statements...")
         await load_data(
             es_client=es_client,
             settings=settings,
-            source="parliamentary-questions",
+            source="policy-documents",
             from_date=from_date_str,
             to_date=to_date_str,
         )
-        logger.info("Parliamentary Questions data ingestion complete.")
+        logger.info("FCA Policy Statements ingestion complete.")
+
+        # Load Consultation Papers (with date range if provided)
+        logger.info("Ingesting FCA Consultation Papers...")
+        await load_data(
+            es_client=es_client,
+            settings=settings,
+            source="consultation-papers",
+            from_date=from_date_str,
+            to_date=to_date_str,
+        )
+        logger.info("FCA Consultation Papers ingestion complete.")
+
+        # Load Authorised Firms register (no date range needed)
+        logger.info("Ingesting FCA Authorised Firms register...")
+        await load_data(
+            es_client=es_client,
+            settings=settings,
+            source="firms-register",
+        )
+        logger.info("FCA Authorised Firms register ingestion complete.")
+
+        # Load Enforcement Notices (with date range if provided)
+        logger.info("Ingesting FCA Enforcement Notices...")
+        await load_data(
+            es_client=es_client,
+            settings=settings,
+            source="enforcement-notices",
+            from_date=from_date_str,
+            to_date=to_date_str,
+        )
+        logger.info("FCA Enforcement Notices ingestion complete.")
 
 
 def handler(event: dict, _: Any) -> None:
@@ -45,7 +76,7 @@ def handler(event: dict, _: Any) -> None:
     AWS Lambda handler function.
 
     This function is the entry point for the Lambda execution.
-    It triggers the daily data ingestion for the Parliament MCP.
+    It triggers the daily data ingestion for the FCA MCP.
 
     Args:
         event (dict): Lambda event. Should be in the format:

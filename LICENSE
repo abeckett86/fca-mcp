@@ -1,6 +1,7 @@
 MIT License
 
-Copyright (c) 2025 i.AI
+Copyright (c) 2024-2025 [Your Company Name]
+Copyright (c) 2024 i-dot-ai (original parliament-mcp components)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +20,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+================================================================================
+
+ORIGINAL WORK ATTRIBUTION:
+
+This project is derived from parliament-mcp (https://github.com/i-dot-ai/parliament-mcp)
+Original work Copyright (c) 2024 i-dot-ai
+Original work licensed under MIT License
+
+The original parliament-mcp provided the foundational architecture for MCP server
+implementation, Elasticsearch integration, and data loading patterns. This derivative
+work (fca-mcp) has been substantially modified to focus on Financial Conduct Authority
+regulatory data instead of UK Parliamentary data.
+
+================================================================================

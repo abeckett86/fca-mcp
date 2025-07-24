@@ -3,7 +3,7 @@
 import pytest
 from elasticsearch import AsyncElasticsearch
 
-from parliament_mcp.settings import settings
+from fca_mcp.settings import settings
 
 
 @pytest.mark.asyncio

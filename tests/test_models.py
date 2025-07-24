@@ -1,6 +1,6 @@
-"""Unit tests for Parliament MCP models."""
+"""Unit tests for FCA MCP models."""
 
-from parliament_mcp.models import Contribution
+from fca_mcp.models import Contribution, FCAHandbookSection
 
 
 def test_contribution_document_uri():
@@ -43,3 +43,31 @@ def test_contribution_document_uri():
         OrderInDebateSection=2,
     )
     assert contribution_without_ext_id.document_uri != contribution_different_text.document_uri
+
+
+def test_fca_handbook_section_document_uri():
+    """Test that FCAHandbookSection model computes document URIs correctly."""
+    handbook_section = FCAHandbookSection(
+        section_id="PRIN_1_1",
+        chapter="PRIN",
+        section_number="1.1",
+        title="The Principles for Businesses",
+        content="A firm must conduct its business with integrity.",
+        content_type="rule",
+        is_current=True,
+    )
+    assert handbook_section.document_uri == "handbook_PRIN_1_1"
+
+
+def test_fca_handbook_section_url():
+    """Test that FCAHandbookSection model computes URLs correctly.""" 
+    handbook_section = FCAHandbookSection(
+        section_id="PRIN_1_1",
+        chapter="PRIN", 
+        section_number="1.1",
+        title="The Principles for Businesses",
+        content="A firm must conduct its business with integrity.",
+        content_type="rule",
+        is_current=True,
+    )
+    assert handbook_section.handbook_url == "https://www.handbook.fca.org.uk/handbook/PRIN_1_1"

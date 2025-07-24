@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
-from parliament_mcp.mcp_server.api import mcp_server, settings
+from fca_mcp.mcp_server.api import mcp_server, settings
 
 
 def create_app():
@@ -30,7 +30,7 @@ def create_app():
 def main(reload=True):
     """Run MCP server with configurable reload option."""
     uvicorn.run(
-        "parliament_mcp.mcp_server.main:create_app",
+        "fca_mcp.mcp_server.main:create_app",
         host=settings.MCP_HOST,
         port=settings.MCP_PORT,
         reload=reload,

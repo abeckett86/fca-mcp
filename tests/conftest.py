@@ -1,4 +1,4 @@
-"""Test configuration and fixtures for Parliament MCP tests."""
+"""Test configuration and fixtures for FCA MCP tests."""
 
 import logging
 import os
@@ -13,9 +13,9 @@ from elasticsearch import AsyncElasticsearch, Elasticsearch
 from testcontainers.core.waiting_utils import wait_for
 from testcontainers.elasticsearch import ElasticSearchContainer
 
-from parliament_mcp.data_loaders import load_data
-from parliament_mcp.elasticsearch_helpers import initialize_elasticsearch_indices
-from parliament_mcp.settings import settings
+from fca_mcp.data_loaders import load_data
+from fca_mcp.elasticsearch_helpers import initialize_elasticsearch_indices
+from fca_mcp.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ async def elasticsearch_container_url() -> AsyncGenerator[str]:
     ensure_docker_connection()
 
     # Create persistent volume path
-    volume_path = Path(__file__).parent / ".parliament-test-es-data"
+    volume_path = Path(__file__).parent / ".fca-test-es-data"
     volume_path.mkdir(exist_ok=True)
 
     # Configure container with persistent volume
@@ -98,7 +98,7 @@ async def es_test_client(
 
         # pytest warning (shows with -W flag)
         warnings.warn(
-            "First-time test setup: Loading Parliamentary data. This will take a few minutes. "
+            "First-time test setup: Loading FCA test data. This will take a few minutes. "
             "This only happens once - subsequent runs will be faster.",
             UserWarning,
             stacklevel=0,
@@ -109,11 +109,14 @@ async def es_test_client(
         # in test environments if the inference endpoint cannot be created
         await initialize_elasticsearch_indices(es_client, settings)
 
-        # Load minimal test data
-        # Load Hansard - Monday to Wednesday
-        await load_data(es_client, settings, "hansard", "2025-06-23", "2025-06-25")
+        # Load minimal FCA test data
+        # Load FCA Handbook sections
+        await load_data(es_client, settings, "handbook")
 
-        # Load Parliamentary Questions - Monday only
-        await load_data(es_client, settings, "parliamentary-questions", "2025-06-23", "2025-06-23")
+        # Load sample Policy Statements
+        await load_data(es_client, settings, "policy-documents")
+
+        # Load sample Authorised Firms
+        await load_data(es_client, settings, "firms-register")
 
         yield es_client

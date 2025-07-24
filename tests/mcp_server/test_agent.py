@@ -3,8 +3,8 @@ import pytest_asyncio
 from agents import Agent, OpenAIResponsesModel, RunItem, Runner, RunResult, function_tool, set_tracing_disabled
 from openai import AsyncAzureOpenAI
 
-from parliament_mcp.mcp_server.api import get_government_posts, search_contributions, search_members
-from parliament_mcp.settings import settings
+from fca_mcp.mcp_server.api import get_government_posts, search_contributions, search_members
+from fca_mcp.settings import settings
 
 set_tracing_disabled(True)
 

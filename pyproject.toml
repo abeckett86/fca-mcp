@@ -14,11 +14,11 @@ skip = [
 ]
 
 [project]
-name = "parliament-mcp"
+name = "fca_mcp"
 version = "0.1.0"
 authors = [{name = "i.AI", email = "i-dot-ai-enquiries@cabinetoffice.gov.uk"}]
 license = {text = "MIT"}
-description = "A library for working with UK Parliamentary data"
+description = "A library for working with UK Financial Conduct Authority (FCA) regulatory data"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "httpx>=0.28.1",
@@ -35,13 +35,14 @@ dependencies = [
     "cryptography>=44.0.1",
     "aiolimiter>=1.2.1",
     "sentry-sdk>=2.18.0",
+    "boto3>=1.35.0",
     "mcp[cli]>=1.9.4",
     "fastapi[standard]>=0.115.13",
     "uvicorn>=0.34.3",
 ]
 
 [project.scripts]
-parliament-mcp = "parliament_mcp.cli:main"
+fca_mcp = "fca_mcp.cli:main"
 
 [dependency-groups]
 dev = [
@@ -124,19 +125,19 @@ exclude = ["out/*"]
 ignore = ["COM812", "DJ001", "RET505", "RET508", "PLR0913"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["parliament_mcp"]
+known-first-party = ["fca_mcp"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "S104", "S106", "PLR0913", "PLR0915", "PLR2004", "TD003", "S311"]
 "*/tests/*" = ["S101", "S106", "PLR0913", "PLR0915", "PLR2004", "TD003"]
 # API files need to match external API parameter names
-"parliament_mcp/mcp_server/api.py" = ["N803", "A002", "E501", "N806"]  # Allow non-snake_case args, shadowing builtins, long lines, and non lowercase variables
-"parliament_mcp/mcp_server/handlers.py" = ["N803", "A001"]  # Allow non-snake_case args and shadowing builtins
-"parliament_mcp/mcp_server/main.py" = ["ARG001"]  # Allow unused args in FastAPI lifespan
-"parliament_mcp/models.py" = ["N815", "FURB162"]  # Allow mixedCase, timezone handling
-"parliament_mcp/settings.py" = ["S104", "TD002", "TD003", "N802"]  # Allow binding all interfaces, TODO format, uppercase property names for settings
-"parliament_mcp/shared_utils/auth.py" = ["E501"]  # Allow longer lines in auth
-"parliament_mcp/cli.py" = ["E501", "PLC0415"]  # Allow longer lines in CLI help text, allow imports not at top of file
+"fca_mcp/mcp_server/api.py" = ["N803", "A002", "E501", "N806"]  # Allow non-snake_case args, shadowing builtins, long lines, and non lowercase variables
+"fca_mcp/mcp_server/handlers.py" = ["N803", "A001"]  # Allow non-snake_case args and shadowing builtins
+"fca_mcp/mcp_server/main.py" = ["ARG001"]  # Allow unused args in FastAPI lifespan
+"fca_mcp/models.py" = ["N815", "FURB162"]  # Allow mixedCase, timezone handling
+"fca_mcp/settings.py" = ["S104", "TD002", "TD003", "N802"]  # Allow binding all interfaces, TODO format, uppercase property names for settings
+"fca_mcp/shared_utils/auth.py" = ["E501"]  # Allow longer lines in auth
+"fca_mcp/cli.py" = ["E501", "PLC0415"]  # Allow longer lines in CLI help text, allow imports not at top of file
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "parliament-mcp": {
+    "fca-mcp": {
       "command": "npx",
       "args": [
         "mcp-remote",

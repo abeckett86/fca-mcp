@@ -4,13 +4,13 @@ from collections.abc import AsyncGenerator
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
-from parliament_mcp.settings import ParliamentMCPSettings
+from fca_mcp.settings import FCAmcpSettings
 
 logger = logging.getLogger(__name__)
 
 
 @contextlib.asynccontextmanager
-async def get_async_es_client(settings: ParliamentMCPSettings) -> AsyncGenerator[AsyncElasticsearch]:
+async def get_async_es_client(settings: FCAmcpSettings) -> AsyncGenerator[AsyncElasticsearch]:
     """Gets an async Elasticsearch client from environment variables.
 
     Supports both Elastic Cloud (via cloud_id and api_key) and
@@ -84,7 +84,7 @@ async def create_index_if_none(
 
 async def create_embedding_inference_endpoint_if_none(
     es_client: AsyncElasticsearch,
-    settings: ParliamentMCPSettings,
+    settings: FCAmcpSettings,
 ) -> dict:
     """
     Create an inference endpoint in Elasticsearch.
@@ -165,7 +165,7 @@ async def delete_inference_endpoint_if_exists(es_client: AsyncElasticsearch, inf
 
 async def initialize_elasticsearch_indices(
     es_client: AsyncElasticsearch,
-    settings: ParliamentMCPSettings,
+    settings: FCAmcpSettings,
 ) -> None:
     """
     Initialize Elasticsearch with proper mappings and inference endpoints.
@@ -175,7 +175,7 @@ async def initialize_elasticsearch_indices(
 
     Args:
         es_client: AsyncElasticsearch client
-        settings: ParliamentMCPSettings instance
+        settings: FCAmcpSettings instance
     """
     logger.info("Initializing Elasticsearch indices")
 
@@ -205,7 +205,51 @@ async def initialize_elasticsearch_indices(
         }
     }
 
-    # Create indices with appropriate mappings
+    # FCA document mappings
+    fca_handbook_mapping = {
+        "properties": {
+            "content": {
+                "type": "semantic_text",
+                "inference_id": settings.EMBEDDING_INFERENCE_ENDPOINT_NAME,
+            },
+            "title": {
+                "type": "semantic_text", 
+                "inference_id": settings.EMBEDDING_INFERENCE_ENDPOINT_NAME,
+            },
+        }
+    }
+    
+    fca_policy_mapping = {
+        "properties": {
+            "content": {
+                "type": "semantic_text",
+                "inference_id": settings.EMBEDDING_INFERENCE_ENDPOINT_NAME,
+            },
+            "summary": {
+                "type": "semantic_text",
+                "inference_id": settings.EMBEDDING_INFERENCE_ENDPOINT_NAME,
+            },
+            "title": {
+                "type": "semantic_text",
+                "inference_id": settings.EMBEDDING_INFERENCE_ENDPOINT_NAME,
+            },
+        }
+    }
+    
+    fca_enforcement_mapping = {
+        "properties": {
+            "content": {
+                "type": "semantic_text",
+                "inference_id": settings.EMBEDDING_INFERENCE_ENDPOINT_NAME,
+            },
+            "summary": {
+                "type": "semantic_text",
+                "inference_id": settings.EMBEDDING_INFERENCE_ENDPOINT_NAME,
+            },
+        }
+    }
+
+    # Create parliamentary indices (kept for transition)
     await create_index_if_none(
         es_client,
         settings.PARLIAMENTARY_QUESTIONS_INDEX,
@@ -216,6 +260,44 @@ async def initialize_elasticsearch_indices(
         es_client,
         settings.HANSARD_CONTRIBUTIONS_INDEX,
         hansard_mapping,
+        replicas=settings.ELASTICSEARCH_NUMBER_OF_REPLICAS,
+    )
+    
+    # Create FCA indices
+    await create_index_if_none(
+        es_client,
+        settings.FCA_HANDBOOK_INDEX,
+        fca_handbook_mapping,
+        replicas=settings.ELASTICSEARCH_NUMBER_OF_REPLICAS,
+    )
+    await create_index_if_none(
+        es_client,
+        settings.FCA_POLICY_STATEMENTS_INDEX,
+        fca_policy_mapping,
+        replicas=settings.ELASTICSEARCH_NUMBER_OF_REPLICAS,
+    )
+    await create_index_if_none(
+        es_client,
+        settings.FCA_CONSULTATION_PAPERS_INDEX,
+        fca_policy_mapping,  # Same structure as policy statements
+        replicas=settings.ELASTICSEARCH_NUMBER_OF_REPLICAS,
+    )
+    await create_index_if_none(
+        es_client,
+        settings.FCA_AUTHORISED_FIRMS_INDEX,
+        {},  # No semantic search needed for firm data
+        replicas=settings.ELASTICSEARCH_NUMBER_OF_REPLICAS,
+    )
+    await create_index_if_none(
+        es_client,
+        settings.FCA_ENFORCEMENT_NOTICES_INDEX,
+        fca_enforcement_mapping,
+        replicas=settings.ELASTICSEARCH_NUMBER_OF_REPLICAS,
+    )
+    await create_index_if_none(
+        es_client,
+        settings.FCA_GUIDANCE_DOCUMENTS_INDEX,
+        fca_policy_mapping,  # Same structure as policy statements
         replicas=settings.ELASTICSEARCH_NUMBER_OF_REPLICAS,
     )
 

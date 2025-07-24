@@ -14,7 +14,7 @@ services:
     volumes:
       - es_data:/usr/share/elasticsearch/data
     networks:
-      - parliament-mcp-network
+      - fca-mcp-network
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
       interval: 30s
@@ -24,17 +24,23 @@ services:
   mcp-server:
     build:
       context: .
-      dockerfile: ./Dockerfile.mcp-server
+      dockerfile: Dockerfile.mcp-server
     container_name: mcp-server
     ports:
-      - "${MCP_PORT}:${MCP_PORT}"
+      - "8080:8080"
     environment:
+      - FCA_API_EMAIL=${FCA_API_EMAIL:-josiahodosu@gmail.com}
+      - FCA_API_KEY=${FCA_API_KEY:-25940b8f715171b5484a1e85c640f3fc}
+      - FCA_API_BASE_URL=${FCA_API_BASE_URL:-https://register.fca.org.uk/services/V0.1}
       - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+      - APP_NAME=fca-mcp
+      - ENVIRONMENT=docker
     env_file:
       - path: .env
         required: true
     networks:
-      - parliament-mcp-network
+      - fca-mcp-network
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -44,5 +50,5 @@ volumes:
     driver: local
 
 networks:
-  parliament-mcp-network:
+  fca-mcp-network:
     driver: bridge

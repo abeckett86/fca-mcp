@@ -1,4 +1,3 @@
-import asyncio
 import functools
 import json
 import logging
@@ -7,12 +6,7 @@ from typing import Any
 
 from pydantic.fields import FieldInfo
 
-from parliament_mcp.data_loaders import cached_limited_get
-
 logger = logging.getLogger(__name__)
-
-MEMBERS_API_BASE_URL = "https://members-api.parliament.uk"
-members_api_semaphore = asyncio.Semaphore(2)
 
 
 def sanitize_params(**kwargs):
@@ -101,65 +95,4 @@ def recursive_flatten_links_and_values(obj: Any) -> Any:
         return obj
 
 
-def remap_values(obj: Any) -> Any:
-    """Remaps some commonly used signal values to more interpretable values"""
-    remap_dict = {
-        "house": {
-            1: "Commons",
-            2: "Lords",
-        },
-    }
-    if isinstance(obj, dict):
-        result = {}
-        for k, v in obj.items():
-            if k in remap_dict and v in remap_dict[k]:
-                result[k] = remap_dict[k][v]
-            else:
-                result[k] = remap_values(v)
-        return result
-    elif isinstance(obj, list):
-        return [remap_values(item) for item in obj]
-    else:
-        return obj
-
-
-# Helper function to make API requests
-async def request_members_api(
-    endpoint: str,
-    params: dict[str, Any] | None = None,
-    remove_null_values: bool = False,
-    return_string: bool = True,
-) -> Any:
-    """Make a request to the Parliament API and return JSON response"""
-    url = f"{MEMBERS_API_BASE_URL}{endpoint}"
-    params = (params or {}) | {"format": "json"}
-    logger.info("Requesting members API: %s, %s", url, params)
-
-    async with members_api_semaphore:
-        try:
-            response = await cached_limited_get(
-                url,
-                headers={
-                    "Accept": "application/json",
-                    "User-Agent": "Parlex MCP",
-                },
-                params=params,
-            )
-            response.raise_for_status()
-            result = response.json()
-
-            result = recursive_flatten_links_and_values(result)
-
-            # Remove blank fields
-            if remove_null_values:
-                result = recursive_remove_null_values(result)
-
-            result = remap_values(result)
-
-            if return_string:
-                return json.dumps(result)
-            else:
-                return result
-        except Exception:
-            logger.exception("Exception in request_members_api: %s, %s", url, params)
-            raise
+# Parliamentary API utilities removed - no longer needed for FCA focus

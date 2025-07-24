@@ -1,0 +1,7 @@
+services:
+  mcp-server:
+    # 🔥 DEVELOPMENT OVERRIDES: Auto-applied when you run docker-compose up
+    volumes:
+      - ./fca_mcp:/app/fca_mcp
+      - ./pyproject.toml:/app/pyproject.toml  
+    command: ["uv", "run", "fca_mcp", "serve"] 

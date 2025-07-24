@@ -399,3 +399,432 @@ def parse_parliamentary_questions_hit(hit: dict[str, Any]) -> dict[str, Any]:
         "dateTabled": parse_date(source.get("dateTabled")),
         "dateAnswered": parse_date(source.get("dateAnswered")),
     }
+
+
+# =============================================================================
+# FCA-Specific Handler Functions
+# =============================================================================
+
+async def search_fca_handbook(
+    *,
+    es_client: AsyncElasticsearch,
+    index: str,
+    query: str,
+    chapter: str | None = None,
+    content_type: str | None = None,
+    is_current: bool = True,
+    limit: int = 10,
+) -> list[dict]:
+    """Search FCA Handbook for rules and guidance."""
+    # Core filters
+    filters = []
+    
+    if is_current:
+        filters.append({"term": {"is_current": True}})
+    
+    if chapter:
+        filters.append({"term": {"chapter.keyword": chapter}})
+    
+    if content_type:
+        filters.append({"term": {"content_type.keyword": content_type}})
+
+    # Build semantic search
+    query_body = {
+        "query": {
+            "bool": {
+                "must": [
+                    build_semantic_query(query, "content", boost=2.0),
+                    build_semantic_query(query, "title", boost=1.5),
+                ],
+                "filter": filters,
+            }
+        },
+        "size": limit,
+        "_source": build_source_fields(
+            includes=[
+                "section_id", "chapter", "section_number", "title", 
+                "content", "content_type", "effective_date", "handbook_url"
+            ],
+            excludes=["title.inference", "content.inference"]
+        )
+    }
+
+    response = await es_client.search(index=index, body=query_body)
+    results = []
+    for hit in response["hits"]["hits"]:
+        cleaned_result = clean_semantic_fields(hit["_source"])
+        results.append(cleaned_result)
+    return results
+
+
+def extract_semantic_text(field_value: Any) -> str:
+    """Extract text from semantic_text field, handling both dict and string formats."""
+    if isinstance(field_value, dict) and "text" in field_value:
+        return field_value["text"]
+    return str(field_value) if field_value is not None else ""
+
+
+def clean_semantic_fields(result: dict) -> dict:
+    """Clean semantic_text fields to return only text values."""
+    cleaned = {}
+    for key, value in result.items():
+        if isinstance(value, dict) and "text" in value:
+            cleaned[key] = value["text"]
+        else:
+            cleaned[key] = value
+    return cleaned
+
+
+async def search_policy_statements(
+    *,
+    es_client: AsyncElasticsearch,
+    index: str,
+    query: str,
+    policy_area: str | None = None,
+    from_date: str | None = None,
+    to_date: str | None = None,
+    ps_number: str | None = None,
+    limit: int = 10,
+) -> list[dict]:
+    """Search FCA Policy Statements."""
+    filters = []
+    
+    if policy_area:
+        filters.append({"term": {"policy_area.keyword": policy_area}})
+    
+    if ps_number:
+        filters.append({"term": {"ps_number.keyword": ps_number}})
+    
+    add_filter_if_exists(filters, build_date_range_filter(from_date, to_date, "publication_date"))
+
+    query_body = {
+        "query": {
+            "bool": {
+                "must": [
+                    build_semantic_query(query, "content", boost=2.0),
+                    build_semantic_query(query, "summary", boost=1.5),
+                    build_semantic_query(query, "title", boost=1.0),
+                ],
+                "filter": filters,
+            }
+        },
+        "size": limit,
+        "_source": build_source_fields(
+            includes=[
+                "ps_number", "title", "publication_date", "summary", 
+                "content", "policy_area", "fca_url"
+            ],
+            excludes=["title.inference", "summary.inference", "content.inference"]
+        )
+    }
+
+    response = await es_client.search(index=index, body=query_body)
+    results = []
+    for hit in response["hits"]["hits"]:
+        cleaned_result = clean_semantic_fields(hit["_source"])
+        results.append(cleaned_result)
+    return results
+
+
+async def search_consultation_papers(
+    *,
+    es_client: AsyncElasticsearch,
+    index: str,
+    query: str,
+    policy_area: str | None = None,
+    from_date: str | None = None,
+    to_date: str | None = None,
+    cp_number: str | None = None,
+    open_for_consultation: bool | None = None,
+    limit: int = 10,
+) -> list[dict]:
+    """Search FCA Consultation Papers."""
+    filters = []
+    
+    if policy_area:
+        filters.append({"term": {"policy_area.keyword": policy_area}})
+    
+    if cp_number:
+        filters.append({"term": {"cp_number.keyword": cp_number}})
+    
+    if open_for_consultation is not None:
+        if open_for_consultation:
+            # Consultation is still open (closes date is in the future)
+            filters.append({"range": {"consultation_closes": {"gte": "now"}}})
+        else:
+            # Consultation is closed
+            filters.append({"range": {"consultation_closes": {"lt": "now"}}})
+    
+    add_filter_if_exists(filters, build_date_range_filter(from_date, to_date, "publication_date"))
+
+    query_body = {
+        "query": {
+            "bool": {
+                "must": [
+                    build_semantic_query(query, "content", boost=2.0),
+                    build_semantic_query(query, "summary", boost=1.5),
+                    build_semantic_query(query, "title", boost=1.0),
+                ],
+                "filter": filters,
+            }
+        },
+        "size": limit,
+        "_source": build_source_fields(
+            includes=[
+                "cp_number", "title", "publication_date", "consultation_closes",
+                "summary", "content", "policy_area", "fca_url"
+            ],
+            excludes=["title.inference", "summary.inference", "content.inference"]
+        )
+    }
+
+    response = await es_client.search(index=index, body=query_body)
+    results = []
+    for hit in response["hits"]["hits"]:
+        cleaned_result = clean_semantic_fields(hit["_source"])
+        results.append(cleaned_result)
+    return results
+
+
+async def search_authorised_firms(
+    *,
+    es_client: AsyncElasticsearch,
+    index: str,
+    query: str | None = None,
+    firm_name: str | None = None,
+    city: str | None = None,
+    permissions: str | None = None,
+    firm_status: str = "Authorised",
+    limit: int = 10,
+) -> list[dict]:
+    """Search FCA Authorised Firms register."""
+    filters = [{"term": {"firm_status.keyword": firm_status}}]
+    
+    if city:
+        filters.append({"term": {"city.keyword": city}})
+    
+    if permissions:
+        filters.append({"match": {"permissions": permissions}})
+
+    must_clauses = []
+    
+    if query:
+        must_clauses.extend([
+            {"match": {"firm_name": {"query": query, "boost": 2.0}}},
+            {"match": {"trading_names": {"query": query, "boost": 1.5}}},
+        ])
+    
+    if firm_name:
+        must_clauses.append({"match": {"firm_name": {"query": firm_name, "boost": 2.0}}})
+
+    query_body = {
+        "query": {
+            "bool": {
+                "must": must_clauses if must_clauses else [{"match_all": {}}],
+                "filter": filters,
+            }
+        },
+        "size": limit,
+        "_source": {
+            "includes": [
+                "firm_reference_number", "firm_name", "trading_names", 
+                "firm_status", "permissions", "address_line_1", "city", 
+                "postcode", "country", "telephone", "register_url"
+            ]
+        }
+    }
+
+    response = await es_client.search(index=index, body=query_body)
+    return [hit["_source"] for hit in response["hits"]["hits"]]
+
+
+async def get_firm_by_frn(
+    *,
+    es_client: AsyncElasticsearch,
+    index: str,
+    firm_reference_number: str,
+) -> dict | None:
+    """Get firm details by Firm Reference Number."""
+    query_body = {
+        "query": {"term": {"firm_reference_number.keyword": firm_reference_number}},
+        "size": 1,
+    }
+
+    response = await es_client.search(index=index, body=query_body)
+    hits = response["hits"]["hits"]
+    return hits[0]["_source"] if hits else None
+
+
+async def search_enforcement_notices(
+    *,
+    es_client: AsyncElasticsearch,
+    index: str,
+    query: str,
+    notice_type: str | None = None,
+    from_date: str | None = None,
+    to_date: str | None = None,
+    min_fine_amount: float | None = None,
+    subject_name: str | None = None,
+    limit: int = 10,
+) -> list[dict]:
+    """Search FCA Enforcement Notices."""
+    filters = []
+    
+    if notice_type:
+        filters.append({"term": {"notice_type.keyword": notice_type}})
+    
+    if min_fine_amount:
+        filters.append({"range": {"fine_amount": {"gte": min_fine_amount}}})
+    
+    if subject_name:
+        filters.append({"match": {"subject_name": subject_name}})
+    
+    add_filter_if_exists(filters, build_date_range_filter(from_date, to_date, "publication_date"))
+
+    query_body = {
+        "query": {
+            "bool": {
+                "must": [
+                    build_semantic_query(query, "content", boost=2.0),
+                    build_semantic_query(query, "summary", boost=1.5),
+                    {"match": {"subject_name": {"query": query, "boost": 1.0}}},
+                ],
+                "filter": filters,
+            }
+        },
+        "size": limit,
+        "_source": build_source_fields(
+            includes=[
+                "notice_id", "notice_type", "subject_name", "publication_date",
+                "action_taken", "summary", "content", "fine_amount", "currency"
+            ],
+            excludes=["summary.inference", "content.inference"]
+        )
+    }
+
+    response = await es_client.search(index=index, body=query_body)
+    results = []
+    for hit in response["hits"]["hits"]:
+        cleaned_result = clean_semantic_fields(hit["_source"])
+        results.append(cleaned_result)
+    return results
+
+
+async def search_guidance_documents(
+    *,
+    es_client: AsyncElasticsearch,
+    index: str,
+    query: str,
+    document_type: str | None = None,
+    topic_area: str | None = None,
+    from_date: str | None = None,
+    to_date: str | None = None,
+    limit: int = 10,
+) -> list[dict]:
+    """Search FCA Guidance Documents."""
+    filters = []
+    
+    if document_type:
+        filters.append({"term": {"document_type.keyword": document_type}})
+    
+    if topic_area:
+        filters.append({"term": {"topic_area.keyword": topic_area}})
+    
+    add_filter_if_exists(filters, build_date_range_filter(from_date, to_date, "publication_date"))
+
+    query_body = {
+        "query": {
+            "bool": {
+                "must": [
+                    build_semantic_query(query, "content", boost=2.0),
+                    build_semantic_query(query, "title", boost=1.5),
+                ],
+                "filter": filters,
+            }
+        },
+        "size": limit,
+        "_source": build_source_fields(
+            includes=[
+                "title", "document_type", "topic_area", "publication_date",
+                "content", "summary", "source_url"
+            ],
+            excludes=["title.inference", "content.inference", "summary.inference"]
+        )
+    }
+
+    response = await es_client.search(index=index, body=query_body)
+    results = []
+    for hit in response["hits"]["hits"]:
+        cleaned_result = clean_semantic_fields(hit["_source"])
+        results.append(cleaned_result)
+    return results
+
+
+async def get_regulatory_updates(
+    *,
+    es_client: AsyncElasticsearch,
+    topic_area: str | None = None,
+    from_date: str | None = None,
+    to_date: str | None = None,
+    document_types: list[str] | None = None,
+    limit: int = 20,
+) -> list[dict]:
+    """Get recent regulatory updates across all FCA document types."""
+    # Search across multiple indices
+    indices = [
+        "fca_mcp_policy_statements",
+        "fca_mcp_consultation_papers", 
+        "fca_mcp_enforcement_notices",
+        "fca_mcp_guidance_documents"
+    ]
+    
+    filters = []
+    
+    if topic_area:
+        filters.append({
+            "bool": {
+                "should": [
+                    {"term": {"policy_area.keyword": topic_area}},
+                    {"term": {"topic_area.keyword": topic_area}},
+                ]
+            }
+        })
+    
+    if document_types:
+        filters.append({
+            "bool": {
+                "should": [
+                    {"terms": {"notice_type.keyword": document_types}},
+                    {"terms": {"document_type.keyword": document_types}},
+                ]
+            }
+        })
+    
+    add_filter_if_exists(filters, build_date_range_filter(from_date, to_date, "publication_date"))
+
+    query_body = {
+        "query": {
+            "bool": {
+                "filter": filters if filters else [{"match_all": {}}],
+            }
+        },
+        "sort": [{"publication_date": {"order": "desc"}}],
+        "size": limit,
+    }
+
+    # Search across all indices
+    all_results = []
+    for index in indices:
+        try:
+            response = await es_client.search(index=index, body=query_body)
+            for hit in response["hits"]["hits"]:
+                source = hit["_source"]
+                source["document_index"] = index.replace("fca_mcp_", "")
+                all_results.append(source)
+        except Exception:
+            # Index might not exist, continue with others
+            continue
+    
+    # Sort all results by publication date and return top results
+    all_results.sort(key=lambda x: x.get("publication_date", ""), reverse=True)
+    return all_results[:limit]
