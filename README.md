@@ -23,9 +23,12 @@ Financial services firms waste **hours every day** manually searching through fr
 
 **See the FCA MCP Server in action:**
 
-[Your video will go here - use one of the methods below]
 
-*Watch a 3-minute demo showing how regulatory questions that normally take hours are answered in seconds*
+https://github.com/user-attachments/assets/7f7c4354-4d1f-4ed5-99f2-d3bc2ce7ddbe
+
+
+
+*Watch a 2-minute demo showing how regulatory questions that normally take hours are answered in seconds*
 
 ### Demo Scenarios:
 - 🏛️ **Digital Asset Startup**: "Do I need FCA authorization for my custody solution?"
