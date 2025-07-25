@@ -21,7 +21,16 @@ Financial services firms waste **hours every day** manually searching through fr
 
 ## 🎬 Demo
 
-*[Demo video coming soon - 2-3 minute walkthrough showing live FCA data queries through Claude Desktop]*
+**See the FCA MCP Server in action:**
+
+[Your video will go here - use one of the methods below]
+
+*Watch a 3-minute demo showing how regulatory questions that normally take hours are answered in seconds*
+
+### Demo Scenarios:
+- 🏛️ **Digital Asset Startup**: "Do I need FCA authorization for my custody solution?"
+- 💼 **Investment Advisory**: "What are current suitability rules for high-net-worth clients?"  
+- 📊 **Market Intelligence**: "Find all authorized wealth management firms in London"
 
 ## 🏗️ How It Works
 
