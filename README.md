@@ -35,7 +35,7 @@ https://github.com/user-attachments/assets/7f7c4354-4d1f-4ed5-99f2-d3bc2ce7ddbe
 - 💼 **Investment Advisory**: "What are current suitability rules for high-net-worth clients?"  
 - 📊 **Market Intelligence**: "Find all authorized wealth management firms in London"
 
-## 🏗How It Works
+## How It Works
 
 Our MCP (Model Context Protocol) server acts as a bridge between AI assistants like Claude Desktop and the FCA's regulatory data. It:
 
