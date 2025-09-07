@@ -44,7 +44,7 @@ Our MCP (Model Context Protocol) server acts as a bridge between AI assistants l
 3. **Exposes conversational tools** for natural language queries
 4. **Returns real-time results** with proper citations and context
 
-**Architecture**: FastMCP server → Elasticsearch with semantic search → Azure OpenAI embeddings → Live FCA APIs
+**Architecture**: FastMCP server → Elasticsearch with semantic search → OpenAI embeddings → Live FCA APIs
 
 ## 🛠️ Available Tools
 
@@ -78,14 +78,14 @@ The MCP Server provides these AI-accessible tools:
 
 ## 🚀 Quick Start (5 Minutes)
 
-**Prerequisites:** Docker, Node.js, Claude Desktop, Azure OpenAI API key
+**Prerequisites:** Docker, Node.js, Claude Desktop, OpenAI API key
 
 1. **Clone and configure:**
    ```bash
    git clone https://github.com/trailblazelabs/fca-mcp.git
    cd fca-mcp
    cp .env.example .env
-   # Edit .env with your Azure OpenAI credentials
+   # Edit .env with your OpenAI API key
    ```
 
 2. **One-command setup:**
@@ -240,7 +240,7 @@ The system works with several types of FCA regulatory documents:
 **Data Loading Process**:
 1. **Fetch** from FCA APIs and web sources
 2. **Transform** into structured models with computed fields
-3. **Embed** using Azure OpenAI for semantic search
+3. **Embed** using OpenAI for semantic search
 4. **Index** into Elasticsearch with proper mappings
 
 ### Daily Data Ingestion
@@ -313,7 +313,7 @@ make es_health
 - Verify Claude Desktop configuration is correct
 
 **Data Loading Failures**
-- Check Azure OpenAI credentials in `.env` file
+- Check OpenAI API key in `.env` file
 - Ensure Elasticsearch is running and accessible
 - Verify network connectivity to FCA APIs and websites
 - Use `--ll DEBUG` flag for detailed logging

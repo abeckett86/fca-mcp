@@ -87,13 +87,11 @@ async def create_embedding_inference_endpoint_if_none(
     settings: FCAmcpSettings,
 ) -> dict:
     """
-    Create an inference endpoint in Elasticsearch.
+    Create an inference endpoint in Elasticsearch using OpenAI.
 
     Args:
-        inference_id (str): The ID for the inference endpoint
-        task_type (str): The type of task (default: "text_embedding")
-        service (str): The service to use (default: "azureopenai")
-        service_settings (dict): Configuration for the service
+        es_client: AsyncElasticsearch client
+        settings: FCAmcpSettings instance
 
     Returns:
         dict: The response from Elasticsearch
@@ -108,12 +106,10 @@ async def create_embedding_inference_endpoint_if_none(
             inference_id=settings.EMBEDDING_INFERENCE_ENDPOINT_NAME,
             task_type="text_embedding",
             inference_config={
-                "service": "azureopenai",
+                "service": "openai",
                 "service_settings": {
-                    "api_key": settings.AZURE_OPENAI_API_KEY,
-                    "resource_name": settings.AZURE_OPENAI_RESOURCE_NAME,
-                    "deployment_id": settings.AZURE_OPENAI_EMBEDDING_MODEL,
-                    "api_version": settings.AZURE_OPENAI_API_VERSION,
+                    "api_key": settings.OPENAI_API_KEY,
+                    "model_id": settings.OPENAI_EMBEDDING_MODEL,
                     "dimensions": settings.EMBEDDING_DIMENSIONS,
                 },
                 "chunking_settings": {

@@ -48,43 +48,27 @@ class FCAmcpSettings(BaseSettings):
         return get_environment_or_ssm("SENTRY_DSN", f"/{self._get_project_name()}/env_secrets/SENTRY_DSN")
 
     @property
-    def AZURE_OPENAI_API_KEY(self) -> str:
+    def OPENAI_API_KEY(self) -> str:
         return get_environment_or_ssm(
-            "AZURE_OPENAI_API_KEY", f"/{self._get_project_name()}/env_secrets/AZURE_OPENAI_API_KEY"
+            "OPENAI_API_KEY", f"/{self._get_project_name()}/env_secrets/OPENAI_API_KEY"
         )
 
     @property
-    def AZURE_OPENAI_ENDPOINT(self) -> str:
+    def OPENAI_EMBEDDING_MODEL(self) -> str:
         return get_environment_or_ssm(
-            "AZURE_OPENAI_ENDPOINT", f"/{self._get_project_name()}/env_secrets/AZURE_OPENAI_ENDPOINT"
-        )
-
-    @property
-    def AZURE_OPENAI_RESOURCE_NAME(self) -> str:
-        return get_environment_or_ssm(
-            "AZURE_OPENAI_RESOURCE_NAME", f"/{self._get_project_name()}/env_secrets/AZURE_OPENAI_RESOURCE_NAME"
-        )
-
-    @property
-    def AZURE_OPENAI_EMBEDDING_MODEL(self) -> str:
-        return get_environment_or_ssm(
-            "AZURE_OPENAI_EMBEDDING_MODEL", f"/{self._get_project_name()}/env_secrets/AZURE_OPENAI_EMBEDDING_MODEL"
-        )
-
-    @property
-    def AZURE_OPENAI_API_VERSION(self) -> str:
-        return get_environment_or_ssm(
-            "AZURE_OPENAI_API_VERSION", f"/{self._get_project_name()}/env_secrets/AZURE_OPENAI_API_VERSION", "preview"
-        )
-
-    @property
-    def AZURE_OPENAI_EMBEDDING_DEPLOYMENT(self) -> str:
-        return get_environment_or_ssm(
-            "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", f"/{self._get_project_name()}/env_secrets/AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
+            "OPENAI_EMBEDDING_MODEL", f"/{self._get_project_name()}/env_secrets/OPENAI_EMBEDDING_MODEL",
             default="text-embedding-3-large"
         )
 
-    # Azure OpenAI settings (configured via properties below)
+    @property
+    def OPENAI_API_BASE_URL(self) -> str:
+        """Optional custom base URL for OpenAI API (defaults to OpenAI's standard endpoint)"""
+        return get_environment_or_ssm(
+            "OPENAI_API_BASE_URL", f"/{self._get_project_name()}/env_secrets/OPENAI_API_BASE_URL",
+            default="https://api.openai.com/v1"
+        )
+
+    # OpenAI settings (configured via properties above)
 
     # FCA API Configuration
     @property
